@@ -1,66 +1,106 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import json
+import uuid
+from datetime import datetime
 from flask import Flask, request
 
 app = Flask(__name__)
 
-data = [
-                {'courseName': 'Game Theory',
-                'courseCode': '15XT81',
-                'classesAttended': 21,
-                'totalClasses': 24},
-                {'courseName': 'Parallel & Distributed Computing',
-                'courseCode': '15XT82',
-                'classesAttended': 13,
-                'totalClasses': 14},
-                {'courseName': 'Mathematical Modelling',
-                'courseCode': '15XT83',
-                'classesAttended': 20,
-                'totalClasses': 28},
-                {'courseName': 'ADBMS',
-                'courseCode': '15XTE1',
-                'classesAttended': 14,
-                'totalClasses': 18},
-                {'courseName': 'DV',
-                'courseCode': '15XTOK',
-                'classesAttended': 22,
-                'totalClasses': 22}
-        ]
+data = {}
+loggedInUserList = {}
+
+
+def redirectScript():
+    return '<script>window.location.replace("http://localhost:3000/")</script>'
+
+
+
 
 @app.route('/')
 def index():
+    print(data, loggedInUserList)
+    print('DEBUG:', request.cookies)
+    if 'bunkalog_session_id' in request.cookies:
+        print(request.cookies.get('bunkalog_session_id'))
     return json.dumps(data) 
 
-@app.route('/add-class', methods=['GET'])
+
+
+@app.route('/loggedInUserList')
+def getLoggedInUserList():
+    print(loggedInUserList)
+    return json.dumps(loggedInUserList, default=str)
+
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    if request.method == 'POST':
+        #print(request.json['response']['googleId'])
+
+        user_id = request.json['response']['googleId']
+        if user_id not in data:
+            data[user_id] = []
+
+        session_id = uuid.uuid4()
+        loggedInUserList[str(session_id)] = [user_id, datetime.now()]
+
+        print(user_id, str(session_id))
+
+        return json.dumps(str(session_id))
+
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    if request.method == 'POST':
+        session_id = request.headers["Bunkalog-Session-Id"]
+        del loggedInUserList[session_id]
+    return 'logout request received'
+
+
+
+@app.route('/add-class', methods=['POST'])
 def addClass():
-        name = request.args.get('courseName')
-        idval = request.args.get('courseCode')
-        attend = int(request.args.get('classesAttended'))
-        total = int(request.args.get('totalClasses'))
-        newdict = {'courseName' : name,
-                                'courseCode' : idval,
-                                'classesAttended' : attend,
-                                'totalClasses' : total}
-        data.append(newdict) 
-        return '<script>window.location.replace("http://192.168.86.129:3000/")</script>'
+    if request.method == 'POST':
+        print(request.json)
+        request.json
+        session_id = request.headers["Bunkalog-Session-Id"]
+        user_id = loggedInUserList[session_id][0]
+        data[user_id].append(request.json)
+        return redirectScript()
 
-@app.route('/attend-class', methods=['GET'])
+
+
+@app.route('/attend-class', methods=['POST'])
 def attendClass():
-        classVal = request.args.get('courseCode')
-        for i in data:
-                if(i['courseCode']==classVal):
-                        i['classesAttended']=i['classesAttended']+1
-                        i['totalClasses']=i['totalClasses']+1
-        return '<script>window.location.replace("http://192.168.86.129:3000/")</script>'
+    if request.method == 'POST':
+        print(request.json)
+        classVal = request.json['courseCode']
+        session_id = request.headers["Bunkalog-Session-Id"]
+        user_id = loggedInUserList[session_id][0]
+        for i in data[user_id]:
+            if(i['courseCode']==classVal):
+                i['classesAttended']=i['classesAttended']+1
+                i['totalClasses']=i['totalClasses']+1
+        return redirectScript()
 
-@app.route('/bunk-class', methods=['GET'])
+
+
+@app.route('/bunk-class', methods=['POST'])
 def bunkClass():
-        classVal = request.args.get('courseCode')
-        for i in data:
-                if(i['courseCode']==classVal):
-                        i['totalClasses']=i['totalClasses']+1
-        return '<script>window.location.replace("http://192.168.86.129:3000/")</script>'
+    if request.method == 'POST':
+        print(request.json)
+        classVal = request.json['courseCode']
+        session_id = request.headers["Bunkalog-Session-Id"]
+        user_id = loggedInUserList[session_id][0]
+        for i in data[user_id]:
+            if(i['courseCode']==classVal):
+                i['totalClasses']=i['totalClasses']+1
+        return redirectScript()
+
+
 
 if __name__=='__main__':
-        app.run(host="192.168.86.129")
+        app.run(host="127.0.0.1")
