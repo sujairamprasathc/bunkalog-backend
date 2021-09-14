@@ -34,6 +34,14 @@ def getLoggedInUserList():
 
 
 
+@app.route('/user')
+def getUserData():
+    session_id = request.args.get('session_id')
+    user_id = loggedInUserList[session_id][0]
+    return json.dumps(data[user_id])
+
+
+
 @app.route('/login', methods=['POST'])
 def login():
     if request.method == 'POST':
@@ -68,7 +76,11 @@ def addClass():
         request.json
         session_id = request.headers["Bunkalog-Session-Id"]
         user_id = loggedInUserList[session_id][0]
-        data[user_id].append(request.json)
+        new_class_details = request.json
+        # Perform validation
+        new_class_details['classesAttended'] = int(new_class_details['classesAttended'])
+        new_class_details['totalClasses'] = int(new_class_details['totalClasses'])
+        data[user_id].append(new_class_details)
         return redirectScript()
 
 
