@@ -42,6 +42,20 @@ def getUserData():
 
 
 
+@app.route('/user/course')
+def getCourseData():
+    courseCode = request.args.get('courseCode')
+    session_id = request.args.get('session_id')
+    user_id = loggedInUserList[session_id][0]
+    response = {}
+    for i in data[user_id]:
+        if i['courseCode'] == courseCode:
+            response = i
+            break
+    return json.dumps(response)
+
+
+
 @app.route('/login', methods=['POST'])
 def login():
     if request.method == 'POST':
