@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
+import os
 import json
 import uuid
 import pymongo
 from datetime import datetime
 from flask import Flask, request
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 
@@ -173,11 +176,9 @@ def bunkClass():
 
 
 if __name__=='__main__':
-    with open('.env') as f:
-        password = f.readline()
-        #print(password, len(password), bytes(password, 'utf-8'))
-    client = pymongo.MongoClient("mongodb://csrp:" + password[:-1] + "@valhalla-shard-00-00.7f9jf.mongodb.net:27017,valhalla-shard-00-01.7f9jf.mongodb.net:27017,valhalla-shard-00-02.7f9jf.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-13itpy-shard-0&authSource=admin&retryWrites=true&w=majority")
-    db = client.test
+    load_dotenv()
+    password = os.getenv("MONGODB_PASSWORD")
+    client = pymongo.MongoClient("mongodb://csrp:" + password + "@valhalla-shard-00-00.7f9jf.mongodb.net:27017,valhalla-shard-00-01.7f9jf.mongodb.net:27017,valhalla-shard-00-02.7f9jf.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-13itpy-shard-0&authSource=admin&retryWrites=true&w=majority")
 
     global databases
     global collection1
