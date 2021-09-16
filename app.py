@@ -11,12 +11,14 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 
+global databases
+global collection1
+global collection2
+
 
 
 @app.route('/')
 def index():
-    global collection1
-    global collection2
     res = collection1.find({})
     all_user_data = []
     for user_data in res:
@@ -27,8 +29,6 @@ def index():
 
 @app.route('/loggedInUserList')
 def getLoggedInUserList():
-    global collection1
-    global collection2
     res = collection2.find({})
     logged_in_users_list = []
     for user in res:
@@ -39,8 +39,6 @@ def getLoggedInUserList():
 
 @app.route('/user')
 def getUserData():
-    global collection1
-    global collection2
     session_id = request.args.get('session_id')
     res = collection2.find_one({'_id': session_id})
     user_id = res["user_id"]
@@ -51,8 +49,6 @@ def getUserData():
 
 @app.route('/user/course')
 def getCourseData():
-    global collection1
-    global collection2
     courseCode = request.args.get('courseCode')
     session_id = request.args.get('session_id')
     
@@ -72,8 +68,6 @@ def getCourseData():
 
 @app.route('/login', methods=['POST'])
 def login():
-    global collection1
-    global collection2
     if request.method == 'POST':
         #print(request.json['response']['googleId'])
 
@@ -93,8 +87,6 @@ def login():
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    global collection1
-    global collection2
     if request.method == 'POST':
         session_id = request.headers["Bunkalog-Session-Id"]
         res = collection2.delete_one({'_id': session_id})
@@ -104,8 +96,6 @@ def logout():
 
 @app.route('/add-class', methods=['POST'])
 def addClass():
-    global collection1
-    global collection2
     if request.method == 'POST':
         print(request.json)
         request.json
@@ -130,8 +120,6 @@ def addClass():
 
 @app.route('/attend-class', methods=['POST'])
 def attendClass():
-    global collection1
-    global collection2
     if request.method == 'POST':
         print(request.json)
         classVal = request.json['courseCode']
@@ -154,8 +142,6 @@ def attendClass():
 
 @app.route('/bunk-class', methods=['POST'])
 def bunkClass():
-    global collection1
-    global collection2
     if request.method == 'POST':
         print(request.json)
         classVal = request.json['courseCode']
@@ -180,9 +166,6 @@ if __name__=='__main__':
     password = os.getenv("MONGODB_PASSWORD")
     client = pymongo.MongoClient("mongodb://csrp:" + password + "@valhalla-shard-00-00.7f9jf.mongodb.net:27017,valhalla-shard-00-01.7f9jf.mongodb.net:27017,valhalla-shard-00-02.7f9jf.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-13itpy-shard-0&authSource=admin&retryWrites=true&w=majority")
 
-    global databases
-    global collection1
-    global collection2
     databases = client.bunkalog
     collection1 = databases.attendance_log
     collection2 = databases.session_log
