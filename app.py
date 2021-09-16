@@ -88,7 +88,7 @@ def login():
 @app.route('/logout', methods=['POST'])
 def logout():
     if request.method == 'POST':
-        session_id = request.headers["Bunkalog-Session-Id"]
+        session_id = request.args.get('session_id')
         res = collection2.delete_one({'_id': session_id})
     return 'logout request received'
 
@@ -99,7 +99,7 @@ def addClass():
     if request.method == 'POST':
         print(request.json)
         request.json
-        session_id = request.headers["Bunkalog-Session-Id"]
+        session_id = request.args.get('session_id')
 
         res = collection2.find_one({'_id': session_id})
         user_id = res["user_id"]
@@ -123,7 +123,7 @@ def attendClass():
     if request.method == 'POST':
         print(request.json)
         classVal = request.json['courseCode']
-        session_id = request.headers["Bunkalog-Session-Id"]
+        session_id = request.args.get('session_id')
         res = collection2.find_one({'_id': session_id})
         user_id = res["user_id"]
 
@@ -145,7 +145,7 @@ def bunkClass():
     if request.method == 'POST':
         print(request.json)
         classVal = request.json['courseCode']
-        session_id = request.headers["Bunkalog-Session-Id"]
+        session_id = request.args.get('session_id')
         res = collection2.find_one({'_id': session_id})
         user_id = res["user_id"]
 
@@ -175,4 +175,6 @@ if __name__=='__main__':
     for doc in res:
         print(doc)"""
 
-    app.run(host="0.0.0.0")
+    port_num = os.getenv('PORT')
+
+    app.run(host="0.0.0.0", port=port_num)
